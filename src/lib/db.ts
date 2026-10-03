@@ -148,3 +148,16 @@ function toRaceSummary(race: RaceRow, runs: RunRow[]): RaceSummary {
   };
   return { id: race.id, seq: Number(race.seq), taskId: race.task_id, createdAt: race.created_at, runs: { A: byRacer('A'), B: byRacer('B') } };
 }
+
+/** A race still in flight (started recently, a run not yet terminal). Used to allow one race at a time. */
+export async function findActiveRace(withinMs = 6 * 60_000): Promise<string | null> {
+  const since = new Date(Date.now() - withinMs).toISOString();
+  const res = await db()
+    .from('runs')
+    .select('race_id, races!inner(created_at)')
+    .in('status', ['running', 'verifying'])
+    .gte('races.created_at', since)
+    .limit(1);
+  if (res.error) throw new DbError('find active race', res.error.message);
+  return (res.data?.[0] as { race_id: string } | undefined)?.race_id ?? null;
+}
