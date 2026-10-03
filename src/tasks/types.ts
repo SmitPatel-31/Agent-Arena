@@ -31,6 +31,7 @@ export function racerLabel(ctx: TaskContext): string {
   return `Racer ${ctx.racer}`;
 }
 
+/** Prefix for racer-owned messages and events. Plain ASCII: models mangle typographic characters. */
 export function runTag(ctx: TaskContext): string {
-  return `[Racer ${ctx.racer} · Run ${ctx.runNumber}]`;
+  return `[Racer ${ctx.racer}, Run ${ctx.runNumber}]`;
 }
