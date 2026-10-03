@@ -33,14 +33,6 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           </nav>
         </header>
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10">{children}</main>
-        <footer className="border-t border-border">
-          <div className="checker h-2.5 opacity-90" aria-hidden />
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-5 text-xs text-muted sm:px-6">
-            <span className="font-display text-sm font-semibold text-fg">Agent Arena</span>
-            <span>Tools by Composio · Racers by Gemini · Results in Supabase</span>
-            <span className="sm:ml-auto">Every result is checked against the real world, never the model&apos;s word.</span>
-          </div>
-        </footer>
       </body>
     </html>
   );
