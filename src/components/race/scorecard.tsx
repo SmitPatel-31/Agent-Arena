@@ -8,17 +8,20 @@ interface Metric {
   value: (r: RunSummary) => string;
   /** Lower-is-better number used to highlight the leader; omit for non-comparable rows. */
   rank?: (r: RunSummary) => number;
+  /** Efficiency rows only mean something between two verified finishers. */
+  needsBothVerified?: boolean;
 }
 
 const METRICS: Metric[] = [
   { label: 'Verified success', value: (r) => (r.verifiedSuccess ? 'Yes' : 'No'), rank: (r) => (r.verifiedSuccess ? 0 : 1) },
-  { label: 'Total time', value: (r) => formatDuration(r.durationMs), rank: (r) => r.durationMs ?? Infinity },
-  { label: 'Steps', value: (r) => String(r.steps), rank: (r) => r.steps },
-  { label: 'Tool errors', value: (r) => String(r.toolErrors), rank: (r) => r.toolErrors },
+  { label: 'Total time', needsBothVerified: true, value: (r) => formatDuration(r.durationMs), rank: (r) => r.durationMs ?? Infinity },
+  { label: 'Steps', needsBothVerified: true, value: (r) => String(r.steps), rank: (r) => r.steps },
+  { label: 'Tool errors', needsBothVerified: true, value: (r) => String(r.toolErrors), rank: (r) => r.toolErrors },
   {
     label: 'Tokens (in / out)',
     value: (r) => `${formatTokens(r.inputTokens)} / ${formatTokens(r.outputTokens)}`,
     rank: (r) => (r.inputTokens ?? 0) + (r.outputTokens ?? 0),
+    needsBothVerified: true,
   },
   { label: 'Ended as', value: (r) => r.status.replace('_', ' ') },
 ];
@@ -26,6 +29,7 @@ const METRICS: Metric[] = [
 export function Scorecard({ race, modelLabel, interrupted }: { race: RaceSummary; modelLabel: (id: string) => string; interrupted: boolean }) {
   const { A, B } = race.runs;
   const { winner, reason } = decideWinner(A, B);
+  const bothVerified = A.verifiedSuccess === true && B.verifiedSuccess === true;
 
   return (
     <section aria-label="Scorecard" className="animate-rise-in overflow-hidden rounded-2xl border border-border bg-surface">
@@ -64,9 +68,10 @@ export function Scorecard({ race, modelLabel, interrupted }: { race: RaceSummary
         </thead>
         <tbody>
           {METRICS.map((m) => {
-            const a = m.rank?.(A);
-            const b = m.rank?.(B);
-            const leader = a === undefined || b === undefined || a === b ? null : a < b ? 'A' : 'B';
+            const comparable = m.rank && (!m.needsBothVerified || bothVerified);
+            const a = comparable ? m.rank!(A) : 0;
+            const b = comparable ? m.rank!(B) : 0;
+            const leader = !comparable || a === b ? null : a < b ? 'A' : 'B';
             return (
               <tr key={m.label} className="border-b border-border last:border-0">
                 <td className="px-5 py-2.5 text-muted">{m.label}</td>
