@@ -12,6 +12,8 @@ const MIN_SUMMARY_CHARS = 15;
 export interface SlackMessage {
   ts: string;
   text: string;
+  /** Set on system notices ("has joined the channel"); absent on normal posts. */
+  subtype?: string;
 }
 
 export const slackSummary: TaskDefinition = {
@@ -25,7 +27,7 @@ export const slackSummary: TaskDefinition = {
   prompt: (ctx) =>
     [
       `In Slack, find the channel #${SLACK_CHANNEL}.`,
-      `Read the most recent message in it that was NOT written by a racer. Ignore every message that starts with "[Racer".`,
+      `Read the most recent message in it that was NOT written by a racer. Ignore every message that starts with "[Racer" and system notices such as "has joined the channel".`,
       `Post ONE new message to #${SLACK_CHANNEL}: a single-line summary of that message, starting exactly with "${runTag(ctx)} ".`,
       `Do not reply in a thread, do not edit or react to other messages. When it is posted, reply with a short confirmation.`,
     ].join('\n'),
@@ -70,13 +72,17 @@ async function findChannelId(execute: ToolExecutor): Promise<string> {
 
 async function fetchMessages(execute: ToolExecutor, channel: string): Promise<SlackMessage[]> {
   const data = await callTool(execute, 'SLACK_FETCH_CONVERSATION_HISTORY', { channel, limit: 50 });
-  return collectObjects(data, (o) => isString(o.ts) && typeof o.text === 'string').map((o) => ({ ts: o.ts as string, text: o.text as string }));
+  return collectObjects(data, (o) => isString(o.ts) && typeof o.text === 'string').map((o) => ({
+    ts: o.ts as string,
+    text: o.text as string,
+    subtype: typeof o.subtype === 'string' ? o.subtype : undefined,
+  }));
 }
 
 /** The message the racers were asked to summarize: newest from before the race, not from a racer. */
 export function latestHumanMessage(messages: SlackMessage[], startedAt: Date): SlackMessage | undefined {
   return messages
-    .filter((m) => Number(m.ts) * 1000 < startedAt.getTime() && !RACER_PREFIX.test(m.text) && m.text.trim().length > 0)
+    .filter((m) => !m.subtype && Number(m.ts) * 1000 < startedAt.getTime() && !RACER_PREFIX.test(m.text) && m.text.trim().length > 0)
     .sort((a, b) => Number(b.ts) - Number(a.ts))[0];
 }
 

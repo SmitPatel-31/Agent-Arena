@@ -51,8 +51,9 @@ describe('slackSummary.verify', () => {
 });
 
 describe('helpers', () => {
-  it('latestHumanMessage skips racer posts and anything after the start', () => {
+  it('latestHumanMessage skips racer posts, system notices and anything after the start', () => {
     const msgs = [
+      { ts: ts(-5), text: '<@U1> has joined the channel', subtype: 'channel_join' },
       { ts: ts(-10), text: '[Racer B, Run 6] old summary' },
       { ts: ts(-60), text: SOURCE },
       { ts: ts(5), text: 'posted during the race' },
