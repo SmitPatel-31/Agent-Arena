@@ -1,8 +1,8 @@
 # Agent Arena
 
-Two AI models race side by side on the same real-world, multi-app task. Both get the same [Composio](https://composio.dev) tools and act on real accounts. Every tool call streams live into a split-screen view. When both stop, the server checks the real outcome itself and shows a scorecard.
+Two AI models race side by side on the same real-world, multi-app task. Both get the same [Composio](https://composio.dev) tools and act on real accounts across GitHub, Notion, Slack, Gmail and Google Calendar. Every tool call streams live into a split-screen view. When both stop, the server checks the real outcome itself and shows a scorecard.
 
-The point of the demo: **a model saying "done" is worth nothing**. The scorecard's success field comes only from independent verification against GitHub and Notion. In the first race the stronger model claimed success but had put the wrong issue on its page, and verification caught it.
+The point of the demo: **a model saying "done" is worth nothing**. The scorecard's success field comes only from independent verification against the real apps. In the first race the stronger model claimed success but had put the wrong issue on its page, and verification caught it.
 
 ## What a race looks like
 
@@ -32,7 +32,7 @@ flowchart LR
     end
 
     Gemini[("Gemini API (free tier)")]
-    Composio[("Composio tools: GitHub, Notion")]
+    Composio[("Composio tools: GitHub, Notion, Slack, Gmail, Calendar")]
     DB[("Supabase Postgres: races, runs, events")]
 
     Home --> Start
@@ -60,7 +60,7 @@ flowchart LR
 
 ### 1. Side effects: racers never share a destination
 
-Both agents act on the same connected accounts, so without care they would collide. Each prompt carries the racer's label and the run number, and each agent may only write to its own labeled destination. For the Notion task, that's a page titled `Arena Run 12 — Racer A` under a shared parent page. The system instruction forbids editing, deleting or replying to anything else, including the other racer's output. The run number comes from a `seq` identity column, so artifacts from different races never clash either.
+Both agents act on the same connected accounts, so without care they would collide. Each prompt carries the racer's label and the run number, and each agent may only write to its own labeled destination: a Notion page titled `Arena Run 12 — Racer A`, a Slack message starting with `[Racer A, Run 12]`, or a calendar event with that same prefix. The system instruction forbids editing, deleting or replying to anything else, including the other racer's output. The run number comes from a `seq` identity column, so artifacts from different races never clash either.
 
 ### 2. Verification: never trust the model
 
@@ -68,6 +68,10 @@ After each run, the backend checks the real outcome by calling Composio directly
 
 - **Page exists under the parent.** The verifier finds the racer's page by listing the parent's child pages, not by Notion search, because Notion's search index lags behind fresh writes.
 - **Issue mentions.** It fetches the newest open issues straight from GitHub, excluding pull requests, and passes only if the page mentions at least 3 of the newest 5. Allowing 3 of 5 means an issue opened mid-race can't fail an honest run.
+
+For **Slack channel summary** ([`src/tasks/slack-summary.ts`](src/tasks/slack-summary.ts)), the verifier reads `#agent-arena` itself: the tagged message must be posted after the race started, be a single non-trivial line, and share real words with the latest non-racer message, so a generic "done!" fails. Slack system notices such as joins are ignored.
+
+For **Gmail to Calendar** ([`src/tasks/gmail-to-calendar.ts`](src/tasks/gmail-to-calendar.ts)), the prompt gives an explicit date, time and timezone, so "tomorrow" can't be misread. The verifier fetches the newest "Arena Invite" email straight from Gmail, then checks that the racer's event exists on that date, includes the email's subject, and starts at exactly 10:00 New York time.
 
 Failed runs are verified too: an agent can finish the work and then time out before saying so. The winner rules are explicit ([`src/lib/score.ts`](src/lib/score.ts)): only a verified success can win; between two verified finishers the faster one wins; ties fall back to fewer steps, then fewer tokens.
 
@@ -109,11 +113,17 @@ Fill in `.env.local`:
 Then:
 
 1. Run [`supabase/schema.sql`](supabase/schema.sql) once in the Supabase SQL editor.
-2. In your demo Notion workspace, create a page titled **Agent Arena**.
-3. Connect the accounts. Each command prints a link; when Notion asks which pages to share, include "Agent Arena".
+2. Prepare the demo accounts:
+   - **Notion:** create a page titled **Agent Arena**.
+   - **Slack:** create a channel named `agent-arena` and post one normal message in it.
+   - **Gmail:** send the test account an email whose subject contains **Arena Invite**.
+3. Connect the accounts. Each command prints a link; when Notion asks which pages to share, include "Agent Arena". Use the same Google account for Gmail and Calendar.
    ```bash
    npm run connect -- github
    npm run connect -- notion
+   npm run connect -- slack
+   npm run connect -- gmail
+   npm run connect -- googlecalendar
    ```
 4. Check everything (env vars, tables, connections, which Gemini models answer):
    ```bash
@@ -153,7 +163,9 @@ src/
     compact.ts         tool-output compaction for the model context
     db.ts              Supabase persistence
   tasks/
-    github-to-notion.ts  prompt + verify() for the Notion task
+    github-to-notion.ts  GitHub issues to a Notion page
+    slack-summary.ts     summarize the latest Slack message
+    gmail-to-calendar.ts book a calendar event from an email
   app/
     api/races/…        start-race endpoint and SSE stream
     race/[id]/         live race page
@@ -165,8 +177,8 @@ supabase/schema.sql
 
 ## Limitations and next steps
 
-- **One task for now.** The task registry is typed and pluggable. The Slack ("summarize the latest message") and Gmail + Calendar ("create tomorrow's event from an email") tasks are designed in the spec but not built yet. Each needs only a prompt, a tool list and a `verify()`.
-- **Free-tier quotas shape the model list.** On the free tier, `gemini-3.8-flash` allows about 20 requests a day (roughly three races), so the defaults are Flash-Lite against 3.6 Flash. `npm run check` reports which models currently answer.
+- **Three tasks.** The registry is typed and pluggable: a new task is a prompt, a tool list and a `verify()`. Good next ones would chain more apps in a single task (for example, GitHub issue to Slack alert to calendar follow-up).
+- **Free-tier quotas shape the model list.** On the free tier, the full Flash models (`gemini-3.6-flash`, `gemini-3.8-flash`) allow 20 requests a day each, roughly three or four races. The Flash-Lite models have far more headroom. When a daily quota runs out, the run stops with a clear message saying when it resets. `npm run check` reports which models currently answer.
 - **One race at a time.** The endpoint refuses concurrent races so they can't share the Gemini quota or the demo accounts. A real product would add a queue and per-user auth.
 - **No auth on the deployed demo.** Anyone with the URL can start a race against the demo accounts. Writes are confined to labeled pages, but a shared deployment should sit behind a password or an allowlist.
 - **Polling-based SSE.** The stream polls Postgres every 400ms. That's simple and works anywhere, but Supabase Realtime (Postgres changes) would cut latency and database reads.
