@@ -60,7 +60,7 @@ export async function GET(request: Request, ctx: RouteContext<'/api/races/[id]/s
         }
       } catch (error) {
         if (!signal.aborted) {
-          send(`event: error\ndata: ${JSON.stringify({ message: error instanceof Error ? error.message : 'Stream failed' })}\n\n`);
+          send(`event: stream_error\ndata: ${JSON.stringify({ message: error instanceof Error ? error.message : 'Stream failed' })}\n\n`);
         }
       } finally {
         try {
