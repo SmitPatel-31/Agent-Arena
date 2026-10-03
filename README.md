@@ -64,7 +64,7 @@ Both agents act on the same connected accounts, so without care they would colli
 
 ### 2. Verification: never trust the model
 
-After each run, the backend checks the real outcome by calling Composio directly, with no model involved. Each task defines its own `verify()` function. For **GitHub issues → Notion brief** ([`src/tasks/github-to-notion.ts`](src/tasks/github-to-notion.ts)):
+After each run, the backend checks the real outcome by calling Composio directly, with no model involved. Each task defines its own `verify()` function. For **GitHub issues to Notion** ([`src/tasks/github-to-notion.ts`](src/tasks/github-to-notion.ts)):
 
 - **Page exists under the parent.** The verifier finds the racer's page by listing the parent's child pages, not by Notion search, because Notion's search index lags behind fresh writes.
 - **Issue mentions.** It fetches the newest open issues straight from GitHub, excluding pull requests, and passes only if the page mentions at least 3 of the newest 5. Allowing 3 of 5 means an issue opened mid-race can't fail an honest run.

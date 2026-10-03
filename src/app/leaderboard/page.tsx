@@ -27,7 +27,7 @@ export default async function LeaderboardPage() {
           body="Standings appear once a race has been run and verified."
           action={
             <Link href="/" className="inline-flex rounded-xl bg-fg px-5 py-2.5 font-display font-semibold text-bg hover:opacity-90">
-              Start a race →
+              Start a race
             </Link>
           }
         />

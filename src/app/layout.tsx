@@ -28,7 +28,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
               href="https://github.com/SmitPatel-31/Agent-Arena"
               className="ml-auto hidden rounded-md border border-border px-2.5 py-1 font-mono text-xs text-muted transition-colors hover:border-fg hover:text-fg sm:block"
             >
-              Source ↗
+              Source
             </a>
           </nav>
         </header>

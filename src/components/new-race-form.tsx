@@ -115,7 +115,7 @@ export function NewRaceForm({ tasks, models, defaults }: Props) {
           type="button"
           onClick={start}
           disabled={submitting || !taskId}
-          className="group inline-flex items-center justify-center gap-3 rounded-xl bg-fg px-6 py-3.5 font-display text-base font-semibold text-bg transition-all hover:gap-4 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+          className="group inline-flex items-center justify-center gap-3 rounded-xl bg-fg px-6 py-3.5 font-display text-base font-semibold text-bg transition-all hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? (
             <>
@@ -123,7 +123,7 @@ export function NewRaceForm({ tasks, models, defaults }: Props) {
             </>
           ) : (
             <>
-              Start race <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
+              Start race
             </>
           )}
         </button>
@@ -139,7 +139,7 @@ export function NewRaceForm({ tasks, models, defaults }: Props) {
           {error.message}{' '}
           {error.raceId && (
             <Link href={`/race/${error.raceId}`} className="font-semibold underline underline-offset-2">
-              Watch it live →
+              Watch it live
             </Link>
           )}
         </div>

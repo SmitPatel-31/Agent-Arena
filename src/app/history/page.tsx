@@ -75,7 +75,6 @@ function RaceRow({ race }: { race: RaceSummary }) {
         ) : (
           <span className="text-sm text-muted">No winner</span>
         )}
-        <span aria-hidden className="text-muted transition-transform group-hover:translate-x-0.5">→</span>
       </div>
     </Link>
   );
@@ -101,7 +100,7 @@ function RunLine({ racer, race, isWinner }: { racer: Racer; race: RaceSummary; i
 function NewRaceLink() {
   return (
     <Link href="/" className="inline-flex rounded-xl bg-fg px-5 py-2.5 font-display font-semibold text-bg transition-opacity hover:opacity-90">
-      Start a race →
+      Start a race
     </Link>
   );
 }

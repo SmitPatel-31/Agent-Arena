@@ -32,7 +32,7 @@ export function RaceView({ race, taskTitle }: { race: RaceSummary; taskTitle: st
       <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
         <div className="min-w-0">
           <Link href="/history" className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted hover:text-fg">
-            ← All races
+            All races
           </Link>
           <h1 className="mt-1 flex flex-wrap items-baseline gap-x-3 font-display text-2xl font-bold tracking-tight">
             Run #{race.seq}

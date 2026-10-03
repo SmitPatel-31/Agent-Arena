@@ -34,7 +34,7 @@ export interface GithubIssue {
 
 export const githubToNotion: TaskDefinition = {
   id: 'github-to-notion',
-  title: 'GitHub issues → Notion brief',
+  title: 'GitHub issues to Notion',
   summary: `Summarize the 3 newest open issues in ${GITHUB_OWNER}/${GITHUB_REPO} into a new Notion page.`,
   difficulty: 'easy',
   toolkits: ['github', 'notion'],
