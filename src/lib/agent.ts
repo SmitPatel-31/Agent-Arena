@@ -1,6 +1,6 @@
 import type { Content, FunctionDeclaration, GenerateContentResponse, GoogleGenAI, Part } from '@google/genai';
 import { compactForModel } from './compact';
-import { classifyGeminiError } from './gemini';
+import { asDailyQuotaError, classifyGeminiError } from './gemini';
 import { executeInstrumented, truncateJson, type ToolExecutor } from './instrument';
 import { errorMessage, RetriesExhaustedError, withBackoff } from './retry';
 import type { EventSink } from './sink';
@@ -165,9 +165,10 @@ export async function runAgent(config: AgentConfig): Promise<AgentResult> {
     const outcome: AgentOutcome = timedOut ? 'timed_out' : 'error';
     const message = timedOut
       ? `Hit the ${Math.round(timeoutMs / 1000)}s time limit.`
-      : error instanceof RetriesExhaustedError
-        ? `Gemini rate limit: gave up after ${error.attempts} attempts. ${summarizeApiError(error.lastError)}`
-        : summarizeApiError(error);
+      : (asDailyQuotaError(error, model)?.message ??
+        (error instanceof RetriesExhaustedError
+          ? `Gemini rate limit: gave up after ${error.attempts} attempts. ${summarizeApiError(error.lastError)}`
+          : summarizeApiError(error)));
     sink.emit({ type: 'run_failed', payload: { outcome, message } });
     return result(outcome, null, message);
   } finally {
