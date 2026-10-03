@@ -1,14 +1,12 @@
 import { eventsAfter, getRace } from '@/lib/db';
 import { abortableSleep } from '@/lib/retry';
-import { isTerminal, type RaceSummary } from '@/lib/types';
+import { isStale, isTerminal, type RaceSummary } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
 const POLL_MS = 400;
 const HEARTBEAT_MS = 15_000;
-/** A race whose runs never finish (e.g. the function was killed) is reported as done after this. */
-const STALE_AFTER_MS = 8 * 60_000;
 
 /**
  * Server-Sent Events for one race.
@@ -46,7 +44,7 @@ export async function GET(request: Request, ctx: RouteContext<'/api/races/[id]/s
           }
 
           const finished = isTerminal(race.runs.A.status) && isTerminal(race.runs.B.status);
-          const stale = Date.now() - Date.parse(race.createdAt) > STALE_AFTER_MS;
+          const stale = isStale(race.createdAt);
           if (events.length === 0 && (finished || stale)) {
             send(`event: done\ndata: ${JSON.stringify({ race, interrupted: !finished })}\n\n`);
             break;

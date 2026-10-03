@@ -79,3 +79,10 @@ export interface RaceSummary {
   createdAt: string;
   runs: Record<Racer, RunSummary>;
 }
+
+/** A race unfinished after this long lost its server process (e.g. the function was killed). */
+export const STALE_AFTER_MS = 8 * 60_000;
+
+export function isStale(createdAt: string, now = Date.now()): boolean {
+  return now - Date.parse(createdAt) > STALE_AFTER_MS;
+}
