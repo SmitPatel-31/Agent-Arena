@@ -44,6 +44,12 @@ describe('slackSummary.verify', () => {
     expect(unrelated.success).toBe(false);
   });
 
+  it('fails when the channel had no human message to summarize', async () => {
+    const verdict = await slackSummary.verify(ctx, fakeSlack([{ ts: ts(20), text: '[Racer A, Run 7] Nothing was posted here yet.' }]));
+    expect(verdict.success).toBe(false);
+    expect(verdict.checks.at(-1)?.detail).toContain('post one before racing');
+  });
+
   it('does not count a tagged message from before the race', async () => {
     const verdict = await slackSummary.verify(ctx, fakeSlack([{ ts: ts(-3600), text: '[Racer A, Run 7] Roadmap review moved to Thursday.' }]));
     expect(verdict.success).toBe(false);

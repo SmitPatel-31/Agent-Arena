@@ -51,14 +51,16 @@ export const slackSummary: TaskDefinition = {
       });
 
       const source = latestHumanMessage(messages, ctx.startedAt);
-      if (source) {
-        const shared = sharedWords(source.text, body);
-        checks.push({
-          label: 'Summary relates to the latest non-racer message',
-          passed: shared.length > 0,
-          detail: shared.length ? `shares "${shared.slice(0, 3).join('", "')}"` : 'no words in common',
-        });
-      }
+      const shared = source ? sharedWords(source.text, body) : [];
+      checks.push({
+        label: 'Summary relates to the latest non-racer message',
+        passed: shared.length > 0,
+        detail: !source
+          ? `no human message in #${SLACK_CHANNEL} to summarize; post one before racing`
+          : shared.length
+            ? `shares "${shared.slice(0, 3).join('", "')}"`
+            : 'no words in common',
+      });
       return result(checks);
     }),
 };
