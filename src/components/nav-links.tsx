@@ -12,7 +12,7 @@ const NAV = [
 export function NavLinks() {
   const pathname = usePathname();
   return (
-    <div className="-mx-1 flex min-w-0 items-center gap-1 overflow-x-auto text-sm">
+    <div className="-mx-1 flex min-w-0 items-center gap-1 overflow-x-auto text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {NAV.map((item) => {
         const active = item.match(pathname);
         return (
