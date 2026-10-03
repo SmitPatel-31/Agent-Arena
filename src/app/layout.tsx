@@ -22,17 +22,17 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
         <header className="sticky top-0 z-20 border-b border-border bg-bg/85 backdrop-blur">
-          <nav className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-4 sm:px-6">
-            <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
+          <nav className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
+            <Link href="/" className="flex shrink-0 items-center gap-2 whitespace-nowrap font-semibold tracking-tight">
               <span aria-hidden className="flex gap-0.5">
                 <span className="h-4 w-1.5 rounded-sm bg-racer-a" />
                 <span className="h-4 w-1.5 rounded-sm bg-racer-b" />
               </span>
               Agent Arena
             </Link>
-            <div className="flex gap-1 text-sm">
+            <div className="-mx-1 flex min-w-0 gap-0.5 overflow-x-auto text-sm">
               {NAV.map((item) => (
-                <Link key={item.href} href={item.href} className="rounded-md px-2.5 py-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-fg">
+                <Link key={item.href} href={item.href} className="whitespace-nowrap rounded-md px-2 py-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-fg">
                   {item.label}
                 </Link>
               ))}
