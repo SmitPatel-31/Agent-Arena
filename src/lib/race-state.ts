@@ -4,7 +4,10 @@
  */
 import type { AgentOutcome, Racer, StreamEvent, VerificationResult } from './types';
 
-export type TimelineItem =
+/** Every item records when it happened (ms epoch) so the telemetry strip can place it on a time axis. */
+export type TimelineItem = TimelineEntry & { at: number };
+
+type TimelineEntry =
   | { kind: 'thinking'; key: string; step: number; text: string }
   | {
       kind: 'tool';
@@ -12,7 +15,7 @@ export type TimelineItem =
       step: number;
       tool: string;
       args: Record<string, unknown>;
-      result?: { success: boolean; durationMs: number; error: string | null; output: string };
+      result?: { success: boolean; durationMs: number; error: string | null; output: string; at: number };
     }
   | { kind: 'rate_limited'; key: string; attempt: number; waitMs: number; message: string }
   | { kind: 'final_answer'; key: string; text: string }
@@ -63,13 +66,13 @@ function reduceRacer(s: RacerState, e: StreamEvent): RacerState {
         ...s,
         phase: 'thinking',
         step: Math.max(s.step, e.payload.step),
-        timeline: e.payload.text ? [...s.timeline, { kind: 'thinking', key, step: e.payload.step, text: e.payload.text }] : s.timeline,
+        timeline: e.payload.text ? [...s.timeline, { kind: 'thinking', key, at, step: e.payload.step, text: e.payload.text }] : s.timeline,
       };
     case 'tool_call':
       return {
         ...s,
         phase: 'calling',
-        timeline: [...s.timeline, { kind: 'tool', key: e.payload.callId + key, step: e.payload.step, tool: e.payload.tool, args: e.payload.args }],
+        timeline: [...s.timeline, { kind: 'tool', key: e.payload.callId + key, at, step: e.payload.step, tool: e.payload.tool, args: e.payload.args }],
       };
     case 'tool_result': {
       const { success, durationMs, error, output, tool } = e.payload;
@@ -78,18 +81,18 @@ function reduceRacer(s: RacerState, e: StreamEvent): RacerState {
       const timeline =
         idx === -1
           ? s.timeline
-          : s.timeline.map((t, i) => (i === idx && t.kind === 'tool' ? { ...t, result: { success, durationMs, error, output } } : t));
+          : s.timeline.map((t, i) => (i === idx && t.kind === 'tool' ? { ...t, result: { success, durationMs, error, output, at } } : t));
       return { ...s, timeline, toolCalls: s.toolCalls + 1, toolErrors: s.toolErrors + (success ? 0 : 1) };
     }
     case 'rate_limited':
-      return { ...s, timeline: [...s.timeline, { kind: 'rate_limited', key, ...e.payload }] };
+      return { ...s, timeline: [...s.timeline, { kind: 'rate_limited', key, at, ...e.payload }] };
     case 'final_answer':
-      return { ...s, phase: 'verifying', finishedAt: at, timeline: [...s.timeline, { kind: 'final_answer', key, text: e.payload.text }] };
+      return { ...s, phase: 'verifying', finishedAt: at, timeline: [...s.timeline, { kind: 'final_answer', key, at, text: e.payload.text }] };
     case 'run_failed':
-      return { ...s, phase: 'verifying', finishedAt: at, timeline: [...s.timeline, { kind: 'failed', key, ...e.payload }] };
+      return { ...s, phase: 'verifying', finishedAt: at, timeline: [...s.timeline, { kind: 'failed', key, at, ...e.payload }] };
     case 'verification_result': {
       const result = { success: e.payload.success, checks: e.payload.checks };
-      return { ...s, phase: 'verified', verification: result, timeline: [...s.timeline, { kind: 'verification', key, result }] };
+      return { ...s, phase: 'verified', verification: result, timeline: [...s.timeline, { kind: 'verification', key, at, result }] };
     }
     default:
       return s;
