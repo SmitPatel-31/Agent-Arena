@@ -55,7 +55,7 @@ export function NewRaceForm({ tasks, models, defaults }: Props) {
     <section aria-label="Set up a race" className="overflow-hidden rounded-3xl border border-border bg-surface shadow-[0_1px_0_var(--border),0_24px_48px_-24px_rgb(0_0_0/0.18)]">
       <div className="border-b border-border p-5 sm:p-6">
         <SectionLabel step="1" label="Choose the course" />
-        <div role="radiogroup" aria-label="Task" className="mt-4 grid gap-3 md:grid-cols-2">
+        <div role="radiogroup" aria-label="Task" className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {tasks.map((task) => {
             const active = task.id === taskId;
             return (
@@ -65,7 +65,7 @@ export function NewRaceForm({ tasks, models, defaults }: Props) {
                 role="radio"
                 aria-checked={active}
                 onClick={() => setTaskId(task.id)}
-                className={`group relative rounded-2xl border p-4 text-left transition-all duration-200 ${
+                className={`group relative flex flex-col rounded-2xl border p-4 text-left transition-all duration-200 ${
                   active ? 'border-fg bg-bg/60' : 'border-border hover:-translate-y-0.5 hover:border-muted'
                 }`}
               >
@@ -80,7 +80,7 @@ export function NewRaceForm({ tasks, models, defaults }: Props) {
                     {active && <span className="h-1.5 w-1.5 rounded-full bg-bg" />}
                   </span>
                 </div>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted">{task.summary}</p>
+                <p className="mt-1.5 flex-1 text-sm leading-relaxed text-muted">{task.summary}</p>
                 <div className="mt-3 flex flex-wrap items-center gap-1.5">
                   {task.toolkits.map((t) => (
                     <span key={t} className="rounded-md bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted">

@@ -6,7 +6,7 @@ const STEPS = [
   {
     n: '01',
     title: 'Same tools, same task',
-    body: 'Both models get an identical, curated set of Composio tools and act on the same real GitHub and Notion accounts, each writing only to its own labeled destination.',
+    body: 'Both models get an identical, curated set of Composio tools and act on the same real GitHub, Notion, Slack, Gmail and Calendar accounts, each writing only to its own labeled destination.',
   },
   {
     n: '02',

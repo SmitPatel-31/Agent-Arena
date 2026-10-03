@@ -1,7 +1,9 @@
 import { githubToNotion } from './github-to-notion';
+import { gmailToCalendar } from './gmail-to-calendar';
+import { slackSummary } from './slack-summary';
 import { racerLabel, type TaskContext, type TaskDefinition } from './types';
 
-export const TASKS: readonly TaskDefinition[] = [githubToNotion];
+export const TASKS: readonly TaskDefinition[] = [githubToNotion, slackSummary, gmailToCalendar];
 
 export function getTask(id: string): TaskDefinition | undefined {
   return TASKS.find((t) => t.id === id);
