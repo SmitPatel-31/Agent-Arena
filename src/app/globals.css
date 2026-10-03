@@ -119,11 +119,11 @@ body {
   to { transform: translateX(0); }
 }
 @keyframes light-on {
-  from { background: var(--surface-2); box-shadow: none; }
+  from { background: #2a2b2e; box-shadow: none; }
   to { background: #e3262f; box-shadow: 0 0 22px 4px rgb(227 38 47 / 0.55); }
 }
 @keyframes lights-out {
-  to { background: var(--surface-2); box-shadow: none; }
+  to { background: #2a2b2e; box-shadow: none; }
 }
 @keyframes go-pop {
   0% { opacity: 0; transform: scale(0.6); }

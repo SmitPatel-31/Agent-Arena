@@ -36,11 +36,11 @@ export function StartLights({ createdAt }: { createdAt: string }) {
       className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-8 bg-bg/85 backdrop-blur-sm"
       style={{ animation: `overlay-out 250ms ease-in ${TOTAL_MS - 250}ms forwards` }}
     >
-      <div className="flex gap-3 rounded-2xl bg-fg p-4 shadow-2xl sm:gap-4 sm:p-5">
+      <div className="flex gap-3 rounded-2xl bg-[#111214] p-4 shadow-2xl ring-1 ring-white/10 sm:gap-4 sm:p-5">
         {Array.from({ length: LIGHTS }, (_, i) => (
           <span
             key={i}
-            className="h-10 w-10 rounded-full bg-surface-2 sm:h-12 sm:w-12"
+            className="h-10 w-10 rounded-full bg-[#2a2b2e] sm:h-12 sm:w-12"
             style={{
               animation: `light-on 120ms ease-out ${i * STEP_MS}ms forwards, lights-out 80ms linear ${LIGHTS * STEP_MS + 200}ms forwards`,
             }}
