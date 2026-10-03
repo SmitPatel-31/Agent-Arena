@@ -8,7 +8,7 @@ export const racerColor: Record<Racer, { text: string; bg: string; soft: string;
 export function RacerBadge({ racer, size = 'sm' }: { racer: Racer; size?: 'sm' | 'lg' }) {
   const dims = size === 'lg' ? 'h-8 w-8 text-sm' : 'h-5 w-5 text-[11px]';
   return (
-    <span className={`inline-flex shrink-0 items-center justify-center rounded-md font-bold text-bg ${dims} ${racerColor[racer].bg}`}>
+    <span className={`inline-flex shrink-0 items-center justify-center rounded-md font-display font-bold text-white ${dims} ${racerColor[racer].bg}`}>
       {racer}
     </span>
   );

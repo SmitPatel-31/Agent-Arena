@@ -1,42 +1,48 @@
 @import "tailwindcss";
 
+/*
+ * Visual identity: a race broadcast. Warm paper / deep ink surfaces, two lane colours
+ * (signal orange vs electric blue) and a checkered-flag motif for finishes.
+ */
 :root {
-  --bg: #f7f7f8;
-  --surface: #ffffff;
-  --surface-2: #f1f2f4;
-  --border: #e3e5e9;
-  --fg: #16181d;
-  --muted: #6b7280;
-  --racer-a: #0e7490;
-  --racer-a-soft: #ecfeff;
-  --racer-b: #a21caf;
-  --racer-b-soft: #fdf4ff;
-  --ok: #15803d;
-  --ok-soft: #f0fdf4;
-  --err: #dc2626;
-  --err-soft: #fef2f2;
-  --warn: #b45309;
-  --warn-soft: #fffbeb;
+  --bg: #f3f1ec;
+  --surface: #fffefb;
+  --surface-2: #ebe8e1;
+  --border: #dcd8cf;
+  --fg: #16150f;
+  --muted: #6d685d;
+  --racer-a: #f0521a;
+  --racer-a-soft: #fdeee6;
+  --racer-b: #2457f5;
+  --racer-b-soft: #e8eefe;
+  --ok: #138a4b;
+  --ok-soft: #e6f4ec;
+  --err: #d92d37;
+  --err-soft: #fcebeb;
+  --warn: #b26a00;
+  --warn-soft: #fbf1df;
+  --grid-line: rgb(22 21 15 / 0.06);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0b0c10;
-    --surface: #12141a;
-    --surface-2: #191c24;
-    --border: #262a34;
-    --fg: #e8eaf0;
-    --muted: #8a90a0;
-    --racer-a: #22d3ee;
-    --racer-a-soft: #0c2a31;
-    --racer-b: #e879f9;
-    --racer-b-soft: #2b1430;
-    --ok: #4ade80;
-    --ok-soft: #0f2a1a;
-    --err: #f87171;
-    --err-soft: #2d1414;
-    --warn: #fbbf24;
-    --warn-soft: #2c220c;
+    --bg: #0c0d0f;
+    --surface: #141619;
+    --surface-2: #1c1f23;
+    --border: #2a2e33;
+    --fg: #f2efe8;
+    --muted: #8e918d;
+    --racer-a: #ff6d33;
+    --racer-a-soft: #2a170e;
+    --racer-b: #5a83ff;
+    --racer-b-soft: #121a31;
+    --ok: #3ad17f;
+    --ok-soft: #0f2419;
+    --err: #ff5a62;
+    --err-soft: #2c1214;
+    --warn: #ffad1f;
+    --warn-soft: #2b2108;
+    --grid-line: rgb(242 239 232 / 0.05);
   }
 }
 
@@ -57,48 +63,96 @@
   --color-err-soft: var(--err-soft);
   --color-warn: var(--warn);
   --color-warn-soft: var(--warn-soft);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
 }
 
 body {
   background: var(--bg);
   color: var(--fg);
+  font-feature-settings: "ss01", "cv11";
 }
+
+::selection {
+  background: var(--racer-a);
+  color: #fff;
+}
+
+/* Keyboard users always see where they are. */
+:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Faint track grid behind hero areas. */
+.bg-track {
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Checkered flag strip. */
+.checker {
+  background-image: conic-gradient(var(--fg) 25%, transparent 0 50%, var(--fg) 0 75%, transparent 0);
+  background-size: 10px 10px;
+}
+
+/* ---------- motion ---------- */
 
 @keyframes rise-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
 }
-
 @keyframes card-in {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  from { opacity: 0; transform: translateY(6px) scale(0.99); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+@keyframes flag-sweep {
+  from { transform: translateX(-30%); }
+  to { transform: translateX(0); }
+}
+@keyframes light-on {
+  from { background: var(--surface-2); box-shadow: none; }
+  to { background: #e3262f; box-shadow: 0 0 22px 4px rgb(227 38 47 / 0.55); }
+}
+@keyframes lights-out {
+  to { background: var(--surface-2); box-shadow: none; }
+}
+@keyframes go-pop {
+  0% { opacity: 0; transform: scale(0.6); }
+  40% { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes overlay-out {
+  to { opacity: 0; visibility: hidden; }
+}
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 currentColor; }
+  100% { box-shadow: 0 0 0 6px transparent; }
+}
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
 
-.animate-rise-in {
-  animation: rise-in 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
-.animate-card-in {
-  animation: card-in 220ms ease-out both;
-}
+.animate-rise-in { animation: rise-in 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.animate-card-in { animation: card-in 260ms ease-out both; }
+.animate-shimmer { animation: shimmer 1.4s linear infinite; }
+.animate-flag-sweep { animation: flag-sweep 8s linear infinite alternate; }
+.animate-pulse-ring { animation: pulse-ring 1.2s ease-out infinite; }
+.animate-grow-x { transform-origin: left; animation: grow-x 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-rise-in,
-  .animate-card-in {
-    animation: none;
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
   }
 }
