@@ -1,20 +1,21 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import type { Phase, RacerState } from '@/lib/race-state';
 import type { Racer } from '@/lib/types';
-import { RacerBadge, racerColor } from '../racer-badge';
+import { racerColor } from '../racer-badge';
 import { formatDuration } from './format';
 import { TimelineCard } from './timeline-card';
+import { useNow } from './use-now';
 
 const MAX_STEPS = 15;
 
-const PHASE_LABEL: Record<Phase, string> = {
-  waiting: 'Waiting',
-  thinking: 'Thinking',
-  calling: 'Calling tool',
-  verifying: 'Verifying',
-  verified: 'Finished',
+const PHASE: Record<Phase, { label: string; tone: string }> = {
+  waiting: { label: 'On the grid', tone: 'text-muted' },
+  thinking: { label: 'Thinking', tone: 'text-fg' },
+  calling: { label: 'Calling a tool', tone: 'text-fg' },
+  verifying: { label: 'Verifying result', tone: 'text-warn' },
+  verified: { label: 'Finished', tone: 'text-muted' },
 };
 
 interface Props {
@@ -30,56 +31,76 @@ export function RacerPane({ racer, modelLabel, state, isWinner, finalDurationMs 
   const color = racerColor[racer];
   const busy = state.phase === 'thinking' || state.phase === 'calling' || state.phase === 'verifying';
   const verdict = state.verification;
+  const phase = PHASE[state.phase];
 
   return (
     <section
-      aria-label={`Racer ${racer}`}
-      className={`flex min-h-0 flex-col overflow-hidden rounded-2xl border bg-surface ${isWinner ? `${color.border} shadow-lg` : 'border-border'}`}
+      aria-label={`Lane ${racer}: ${modelLabel}`}
+      className={`flex min-h-0 flex-col overflow-hidden rounded-2xl border bg-surface transition-shadow duration-500 ${
+        isWinner ? `${color.border} shadow-[0_0_0_1px_currentColor,0_20px_40px_-20px_currentColor] ${color.text}` : 'border-border'
+      }`}
     >
-      <header className={`border-b border-border px-4 py-3 ${color.soft}`}>
-        <div className="flex items-center gap-3">
-          <RacerBadge racer={racer} size="lg" />
-          <div className="min-w-0 flex-1">
-            <div className="truncate font-semibold">{modelLabel}</div>
-            <div className="flex items-center gap-1.5 text-xs text-muted">
-              {busy && <span className={`h-1.5 w-1.5 animate-pulse rounded-full ${color.bg}`} />}
-              {verdict ? (
-                <span className={verdict.success ? 'font-medium text-ok' : 'font-medium text-err'}>
-                  {verdict.success ? 'Verified success' : 'Not verified'}
-                </span>
-              ) : (
-                PHASE_LABEL[state.phase]
-              )}
+      <div className={`h-1 shrink-0 ${color.bg}`} aria-hidden />
+      <header className="border-b border-border px-4 pb-3 pt-3.5 text-fg">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className={`font-mono text-[10px] font-medium uppercase tracking-[0.16em] ${color.text}`}>Lane {racer}</div>
+            <div className="truncate font-display text-lg font-bold tracking-tight">{modelLabel}</div>
+          </div>
+          <StatusChip busy={busy} dot={color.bg} verdict={verdict?.success ?? null} label={phase.label} tone={phase.tone} />
+        </div>
+
+        <dl className="mt-3 grid grid-cols-3 gap-3">
+          <div>
+            <dt className="font-mono text-[10px] uppercase tracking-wider text-muted">Step</dt>
+            <dd className="font-mono text-xl font-semibold tabular-nums">
+              {state.step}
+              <span className="text-sm text-muted">/{MAX_STEPS}</span>
+            </dd>
+            <div className="mt-1 h-1 overflow-hidden rounded-full bg-surface-2">
+              <div className={`h-full rounded-full ${color.bg} transition-[width] duration-500`} style={{ width: `${(state.step / MAX_STEPS) * 100}%` }} />
             </div>
           </div>
-          <dl className="flex gap-4 text-right">
-            <Stat label="Step" value={`${state.step}/${MAX_STEPS}`} />
-            <Stat label="Time" value={finalDurationMs !== null ? formatDuration(finalDurationMs) : <Elapsed start={state.startedAt} end={state.finishedAt} />} />
-            <Stat label="Errors" value={String(state.toolErrors)} tone={state.toolErrors > 0 ? 'text-err' : undefined} />
-          </dl>
-        </div>
+          <div>
+            <dt className="font-mono text-[10px] uppercase tracking-wider text-muted">Time</dt>
+            <dd className="font-mono text-xl font-semibold tabular-nums">
+              {finalDurationMs !== null ? formatDuration(finalDurationMs) : <Elapsed start={state.startedAt} end={state.finishedAt} />}
+            </dd>
+          </div>
+          <div>
+            <dt className="font-mono text-[10px] uppercase tracking-wider text-muted">Tool errors</dt>
+            <dd className={`font-mono text-xl font-semibold tabular-nums ${state.toolErrors > 0 ? 'text-err' : ''}`}>
+              {state.toolErrors}
+              <span className="text-sm text-muted">/{state.toolCalls}</span>
+            </dd>
+          </div>
+        </dl>
       </header>
       <Timeline state={state} />
     </section>
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: React.ReactNode; tone?: string }) {
+function StatusChip({ busy, dot, verdict, label, tone }: { busy: boolean; dot: string; verdict: boolean | null; label: string; tone: string }) {
+  if (verdict !== null) {
+    return (
+      <span
+        className={`animate-card-in shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${verdict ? 'bg-ok-soft text-ok' : 'bg-err-soft text-err'}`}
+      >
+        {verdict ? '✓ Verified' : '✗ Not verified'}
+      </span>
+    );
+  }
   return (
-    <div>
-      <dt className="text-[10px] uppercase tracking-wide text-muted">{label}</dt>
-      <dd className={`font-mono text-sm tabular-nums ${tone ?? ''}`}>{value}</dd>
-    </div>
+    <span className={`flex shrink-0 items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs font-medium ${tone}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${busy ? `${dot} animate-pulse` : 'bg-muted'}`} />
+      {label}
+    </span>
   );
 }
 
 function Elapsed({ start, end }: { start: number | null; end: number | null }) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    if (start === null || end !== null) return;
-    const timer = setInterval(() => setNow(Date.now()), 100);
-    return () => clearInterval(timer);
-  }, [start, end]);
+  const now = useNow(start !== null && end === null);
   if (start === null) return <>0.0s</>;
   return <>{formatDuration(Math.max(0, (end ?? now) - start))}</>;
 }
@@ -101,10 +122,16 @@ function Timeline({ state }: { state: RacerState }) {
         const el = e.currentTarget;
         pinned.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
       }}
-      className="flex-1 space-y-2 overflow-y-auto p-3"
+      className="flex-1 space-y-2 overflow-y-auto bg-bg/40 p-3 text-fg"
     >
       {state.timeline.length === 0 ? (
-        <p className="py-10 text-center text-sm text-muted">{state.phase === 'waiting' ? 'Waiting for the start…' : 'Thinking about the first move…'}</p>
+        <div className="space-y-2 py-2" aria-label="Waiting for the first move">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="relative h-14 overflow-hidden rounded-lg border border-border bg-surface" style={{ opacity: 1 - i * 0.3 }}>
+              <div className="animate-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-surface-2 to-transparent" />
+            </div>
+          ))}
+        </div>
       ) : (
         state.timeline.map((item) => <TimelineCard key={item.key} item={item} />)
       )}

@@ -26,7 +26,7 @@ export function TimelineCard({ item }: { item: TimelineItem }) {
     case 'final_answer':
       return (
         <div className="animate-card-in rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm">
-          <div className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted">Agent claims it&apos;s done</div>
+          <div className="mb-1 font-mono text-[10px] font-medium uppercase tracking-wider text-muted">Agent claims it&apos;s done · unverified</div>
           <p className="line-clamp-4">{item.text}</p>
         </div>
       );
@@ -78,9 +78,14 @@ function ToolCard({ item }: { item: Extract<TimelineItem, { kind: 'tool' }> }) {
   const tone = !result ? 'border-l-muted/50' : result.success ? 'border-l-ok' : 'border-l-err';
 
   return (
-    <div className={`animate-card-in rounded-lg border border-l-4 border-border bg-surface px-3 py-2.5 text-sm ${tone}`}>
+    <div className={`animate-card-in relative overflow-hidden rounded-lg border border-l-4 border-border bg-surface px-3 py-2.5 text-sm transition-shadow hover:shadow-sm ${tone}`}>
+      {!result && (
+        <div className="absolute inset-x-0 bottom-0 h-0.5 overflow-hidden bg-surface-2" aria-hidden>
+          <div className="animate-shimmer h-full w-1/2 bg-gradient-to-r from-transparent via-fg/50 to-transparent" />
+        </div>
+      )}
       <div className="flex items-center gap-2">
-        <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-muted">{toolkit}</span>
+        <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-muted">{toolkit}</span>
         <span className="min-w-0 flex-1 truncate font-medium" title={item.tool}>
           {action}
         </span>
