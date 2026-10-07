@@ -83,8 +83,6 @@ Failed runs are verified too: an agent can finish the work and then time out bef
 - **Pinned toolkit versions.** Both racers and the verifier see identical tool schemas for the whole demo.
 - **Strict TypeScript** with no `any` in core logic. Events are a discriminated union that serves as the wire contract between server and browser.
 
-Integration problems hit along the way, with concrete suggestions for Composio, are recorded in [`FRICTION_LOG.md`](FRICTION_LOG.md).
-
 ## Tech stack
 
 Next.js 16 (App Router) · TypeScript · Tailwind CSS 4 · `@composio/core` + `@composio/google` · `@google/genai` · Supabase Postgres · Server-Sent Events · Vitest · Vercel. Every service runs on its free tier.

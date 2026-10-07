@@ -3,7 +3,7 @@
  *   npm run connect -- notion
  *
  * Uses connectedAccounts.link() rather than toolkits.authorize(): as of SDK 0.22 the
- * latter calls an endpoint the API rejects for Composio-managed OAuth (see FRICTION_LOG.md).
+ * latter calls an endpoint the API rejects for Composio-managed OAuth.
  */
 import { getComposio, TOOLKIT_VERSIONS, type ToolkitSlug } from '@/lib/composio';
 import { getEnv } from '@/lib/env';
